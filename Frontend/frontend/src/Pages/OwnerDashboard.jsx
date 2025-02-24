@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import "./OwnerDashboard.css";
+import { useNavigate } from "react-router-dom";
 
-const OwnerDashboard = () => {
+const OwnerDashboard = ({ onLogout }) => {
+    const navigate = useNavigate();
     const [showLibraryModal, setShowLibraryModal] = useState(false);
     const [showAdminModal, setShowAdminModal] = useState(false);
     const [libraryName, setLibraryName] = useState("");
@@ -99,6 +101,7 @@ const OwnerDashboard = () => {
             <div className="button-container">
                 <button className="create-library" onClick={handleLibraryClick}>Create Library</button>
                 <button className="create-admin" onClick={handleAdminClick}>Create Admin</button>
+                <button onClick={() => onLogout(navigate)}>Logout</button>
             </div>
 
             {/* Library Modal */}
