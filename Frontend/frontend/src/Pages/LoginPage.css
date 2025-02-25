@@ -1,6 +1,6 @@
-.register-container {
+.login-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 400px;
     margin: 50px auto;
     padding: 20px;
     border: 1px solid #ccc;
@@ -8,10 +8,12 @@
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
     background-color: #fff;
+    color: black !important;
 }
 
 .input-group {
     margin-bottom: 15px;
+    margin-right: 20px;
     text-align: left;
 }
 
@@ -19,7 +21,7 @@
     display: block;
     font-weight: bold;
     margin-bottom: 5px;
-    color: #333;
+    color: black;
 }
 
 input,
@@ -30,11 +32,16 @@ select {
     border-radius: 5px;
     font-size: 16px;
     background-color: #f9f9f9;
-    transition: border-color 0.3s ease-in-out;
+    color: black !important;
+    transition: 0.3s ease-in-out;
     cursor: pointer;
 }
 
-/* Focus effect */
+input::placeholder {
+    color: black !important;
+    opacity: 0.7;
+}
+
 input:focus,
 select:focus {
     border-color: #28a745;
@@ -42,21 +49,18 @@ select:focus {
     background-color: #fff;
 }
 
-/* Style for the dropdown options */
 select option {
     background-color: #fff;
-    color: #333;
+    color: black !important;
     font-size: 16px;
     padding: 10px;
 }
 
-/* Hover effect on options (only works in some browsers) */
 select option:hover {
     background-color: #28a745;
     color: white;
 }
 
-/* Style for disabled option */
 select option:disabled {
     color: #aaa;
     font-style: italic;

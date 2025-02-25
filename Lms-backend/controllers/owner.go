@@ -136,3 +136,34 @@ func CreateAdmin(c *gin.Context) {
 	})
 
 }
+func GetLib(c *gin.Context) {
+	var libexist models.User
+	// libraries := []models.Library{}
+	email, _ := c.Get("email")
+
+	//now check for its existence of Libid of this owner
+	if err := initializers.DB.Where("email=?", email).First(&libexist).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": err.Error(),
+		})
+	}
+
+	if libexist.LibID == 0 {
+		//means lib doesnt exist
+		c.JSON(http.StatusNotFound, gin.H{
+			"Message": "Library doesnot exist",
+		})
+		return
+	}
+	var library models.Library
+
+	if err := initializers.DB.Where("ID", libexist.LibID).First(&library).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"library": library,
+	})
+}

@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import "./OwnerDashboard.css";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import Cookies from 'js-cookie'
+// import "./OwnerDashboard.css";
 import { useNavigate } from "react-router-dom";
 
-const OwnerDashboard = ({ onLogout }) => {
-    const navigate = useNavigate();
+const OwnerDashboard = () => {
+    // const navigate = useNavigate();
+    const token = localStorage.getItem("token");
+    // const cookie=Cookies.get("Authorization")
+    // console.log(cookie)
+    // console.log("Token is",token)
     const [showLibraryModal, setShowLibraryModal] = useState(false);
     const [showAdminModal, setShowAdminModal] = useState(false);
     const [libraryName, setLibraryName] = useState("");
@@ -12,6 +18,8 @@ const OwnerDashboard = ({ onLogout }) => {
     const [adminContact, setAdminContact] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [libraryId, setLibraryId] = useState()
+    const [libraryData, setLibraryData] = useState([])
 
     const handleLibraryClick = () => {
         setShowLibraryModal(true);
@@ -35,7 +43,6 @@ const OwnerDashboard = ({ onLogout }) => {
         setError("");
     };
 
-    // API Call: Create Library
     const handleCreateLibrary = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -46,8 +53,9 @@ const OwnerDashboard = ({ onLogout }) => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
                 },
-                credentials: "include",
+                // credentials: "include",
                 body: JSON.stringify({ name: libraryName }),
             });
 
@@ -62,8 +70,6 @@ const OwnerDashboard = ({ onLogout }) => {
             setLoading(false);
         }
     };
-
-    // API Call: Create Admin
     const handleCreateAdmin = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -74,8 +80,10 @@ const OwnerDashboard = ({ onLogout }) => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
+
                 },
-                credentials: "include",
+                // credentials: "include",
                 body: JSON.stringify({
                     name: adminName,
                     email: adminEmail,
@@ -95,16 +103,60 @@ const OwnerDashboard = ({ onLogout }) => {
         }
     };
 
+    useEffect(() => {
+        fetchLibs()
+    }, [])
+
+    async function fetchLibs() {
+        console.log(token)
+        const response = await axios.get("http://localhost:8000/api/library/getlib", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            // credentials: "include",
+        })
+
+
+        // console.log(response.data.library[0].id)
+        setLibraryData([response.data.library])
+        console.log([response.data.library])
+        setLibraryId(response.data.library)
+        // console.log(libraryData)
+        // const res=await fetch("http://localhost:8000/api/library/getlib",
+        //     {
+        //         method: "GET",
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'Authorization': token
+        //           },
+        //           credentials: "include",
+        //     }
+        // )
+        // console.log(res)
+        // const json = await res.json();
+        // console.log(json.library);
+        // setLibraryId(json.library.id)
+        // setLibraryData(json.library)
+
+
+        //console.log(getLibraries)
+        // setLibrary(getLibraries)
+    }
+
+
+
     return (
         <div className="owner-dashboard">
+            {/* {libraryId} */}
             <h1 className="dashboard-title">Owner Dashboard</h1>
             <div className="button-container">
-                <button className="create-library" onClick={handleLibraryClick}>Create Library</button>
+                {!libraryId && (<button className="create-library" onClick={handleLibraryClick}>Create Library</button>)}
                 <button className="create-admin" onClick={handleAdminClick}>Create Admin</button>
-                <button onClick={() => onLogout(navigate)}>Logout</button>
+                {/* <button onClick={() => onLogout(navigate)}>Logout</button> */}
             </div>
 
-            {/* Library Modal */}
+
             {showLibraryModal && (
                 <div className="modal">
                     <div className="modal-content">
@@ -126,7 +178,6 @@ const OwnerDashboard = ({ onLogout }) => {
                 </div>
             )}
 
-            {/* Admin Modal */}
             {showAdminModal && (
                 <div className="modal">
                     <div className="modal-content">
@@ -163,6 +214,14 @@ const OwnerDashboard = ({ onLogout }) => {
                     </div>
                 </div>
             )}
+            <div className="library-container">
+                {libraryData.map((lib, index) => (
+                    <div key={index} className="library-card">
+                        <h3>{lib.name}</h3>
+                        <p>ID: {lib.id}</p>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

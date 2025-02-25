@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { StrictMode, useState } from "react";
 import axios from "axios";
 import "./LoginPage.css"
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
+    // const navigate=useNavigate()
+    // if (!role){
+    //     navigate("/")
+    // }
     const [email, setEmail] = useState("");
     //   const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -14,12 +19,14 @@ const Login = () => {
         setMessage("");
 
         try {
-            const response = await axios.post("http://localhost:8000/api/users/login", {
-                email,
-                // password,
-            }, { withCredentials: true });
+            const response = await axios.post("http://localhost:8000/api/users/login",
+                {
+                    email,
+                },
+            );
 
             setMessage("Logged in successfully!");
+            console.log("Login response", response)
             localStorage.setItem("token", response.data.token);
             localStorage.setItem("role", response.data.role);
 
@@ -54,18 +61,7 @@ const Login = () => {
                         required
                     />
                 </div>
-
-                {/* <div className="input-group">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div> */}
-
+                <p>Don't have an account ? <Link to={"/"}>Register</Link></p>
                 <button type="submit">Login</button>
             </form>
         </div>

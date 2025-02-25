@@ -1,9 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import RegisterPage from './Pages/RegisterPage';
 import Login from './Pages/LoginPage';
-import OwnerDashboard from './Pages/OwnerDashboard';
 import './App.css';
+import Navbar from "./Components/Navbar";
+import OwnerDashboard from "./Pages/OwnerDashboard";
+import AdminDashboard from "./Pages/AdminDashboard";
 // import AdminDashboard from './Pages/AdminDashboard';
 // import ReaderDashboard from './Pages/ReaderDashboard';
 
@@ -22,8 +24,8 @@ function getRoleFromToken() {
 
 // 🔹 Logout Function
 function handleLogout(navigate) {
-  localStorage.removeItem("token"); // Remove token
-  navigate("/login"); // Redirect to login
+  localStorage.removeItem("token");
+  navigate("/");
 }
 
 function AuthRedirect() {
@@ -34,14 +36,15 @@ function AuthRedirect() {
     const userRole = getRoleFromToken();
     setRole(userRole);
 
-    if (!userRole) {
-      navigate("/login");
-    } else if (userRole === "owner") {
+    if (userRole === "owner") {
       navigate("/owner-dashboard");
     } else if (userRole === "admin") {
       navigate("/admin-dashboard");
     } else if (userRole === "reader") {
       navigate("/reader-dashboard");
+    }
+    else {
+      navigate("/")
     }
   }, []);
 
@@ -50,18 +53,21 @@ function AuthRedirect() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthRedirect />
-      <Routes>
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/owner-dashboard" element={<OwnerDashboard onLogout={handleLogout} />} />
-        {/* <Route path="/admin-dashboard" element={<AdminDashboard onLogout={handleLogout} />} />
-        <Route path="/reader-dashboard" element={<ReaderDashboard onLogout={handleLogout} />} /> */}
+    <>
+      <BrowserRouter>
+        <Navbar onLogout={handleLogout} />
+        <AuthRedirect />
+        <Routes>
+          <Route path="/" element={<RegisterPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          {/* <Route path="/reader-dashboard" element={<ReaderDashboard onLogout={handleLogout} />} /> */}
 
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </BrowserRouter>
+          {/* <Route path="*" element={<Navigate to="/login" />} /> */}
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

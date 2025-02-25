@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 // import "./RegisterPage.css";
 
@@ -10,7 +10,7 @@ const RegisterPage = () => {
         name: "",
         email: "",
         contact_no: "",
-        role: "owner", // Default role
+        role: "",
     });
 
     const [error, setError] = useState("");
@@ -97,6 +97,7 @@ const RegisterPage = () => {
                     </select>
                 </div>
                 <button type="submit">Register</button>
+                <p>Already Have an account ? <Link to={"/login"}>Login</Link></p>
             </form>
         </div>
     );

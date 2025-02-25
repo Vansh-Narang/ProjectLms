@@ -4,8 +4,9 @@ import (
 	"lms/backend/controllers"
 	"lms/backend/initializers"
 	"lms/backend/middleware"
-"github.com/gin-contrib/cors"
-"time"
+	"time"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,13 +15,22 @@ func main() {
 
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // Adjust frontend URLs
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// Handle OPTIONS requests
+	router.OPTIONS("/*path", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Status(204)
+	})
 
 	publicRoutes := router.Group("/api")
 	{
@@ -36,6 +46,7 @@ func main() {
 		{
 			library.POST("/create", controllers.CreateLibrary)
 			library.POST("/create-admin", controllers.CreateAdmin)
+			library.GET("/getlib", controllers.GetLib)
 		}
 
 		admin := protectedRoutes.Group("/admin")
@@ -45,7 +56,8 @@ func main() {
 			admin.DELETE("/:id", controllers.RemoveBook) // Only need to
 			admin.PUT("/:id", controllers.UpdateBook)    // Only need to update with the id
 			admin.GET("/list-requests", controllers.ListRequests)
-			admin.PUT("/handle-request/:id", controllers.HandleRequest) //function to approve or reject issue request
+			admin.PUT("/:id/approve", controllers.ApproveRequest) //function to approve or reject issue request
+			admin.PUT("/:id/reject", controllers.RejectRequest)
 		}
 		reader := protectedRoutes.Group("/reader")
 		reader.Use(middleware.ReaderOnly)

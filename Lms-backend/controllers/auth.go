@@ -29,7 +29,8 @@ func CreateUser(c *gin.Context) {
 
 	if exisitingUser.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Error": "already exists with the same email",
+			"Error":   "already exists with the same email",
+			"message": "Same Email Already Exists",
 		})
 		return
 	}
@@ -74,7 +75,7 @@ func LoginUser(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	newToken, _ := token.SignedString(secretKey)
 
-	c.SetCookie("Authorise", newToken, 3600, "", "", false, true)
+	// c.SetCookie("Authorise", newToken, 3600, "", "", false, true)
 
 	c.JSON(200, gin.H{
 		"message": "Logged in successfully",
