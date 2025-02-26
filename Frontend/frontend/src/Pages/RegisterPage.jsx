@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./RegisterPage.css";
 
 const API_URL = "http://localhost:8000/api/users/register";
+const LIBRARIES_API = "http://localhost:8000/api/getLib";
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
@@ -11,12 +12,27 @@ const RegisterPage = () => {
         email: "",
         contact_no: "",
         role: "",
-        library: "", // Added library field
+        library: "",
     });
 
+    const [libraries, setLibraries] = useState([]);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchLibraries = async () => {
+            try {
+                const response = await axios.get(LIBRARIES_API);
+                console.log(response)
+                setLibraries(response.data.libraries);
+            } catch (err) {
+                console.error("Error fetching libraries:", err);
+            }
+        };
+
+        fetchLibraries();
+    }, []);
 
     const handleChange = (e) => {
         setFormData({
@@ -98,7 +114,7 @@ const RegisterPage = () => {
                     </select>
                 </div>
 
-                {/* Show Library selection only if role is 'reader' */}
+                {/* Show Library selection only if role is "reader" */}
                 {formData.role === "reader" && (
                     <div className="input-group">
                         <label>Library</label>
@@ -109,15 +125,17 @@ const RegisterPage = () => {
                             required
                         >
                             <option value="" disabled>Select a library</option>
-                            <option value="central">Central Library</option>
-                            <option value="community">Community Library</option>
-                            <option value="university">University Library</option>
+                            {libraries.map((library) => (
+                                <option key={library.id} value={library.id}>
+                                    {library.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 )}
 
                 <button type="submit">Register</button>
-                <p>Already have an account? <Link to="/login">Login</Link></p>
+                <p>Already have an account? <Link to={"/login"}>Login</Link></p>
             </form>
         </div>
     );

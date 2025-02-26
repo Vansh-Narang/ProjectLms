@@ -88,4 +88,19 @@ func RaiseIssueRequest(c *gin.Context) {
 	})
 }
 
+func GetLibraries(c *gin.Context) {
+	var libraries []models.Library
 
+	// Fetch all libraries from the database
+	if err := initializers.DB.Find(&libraries).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   err.Error(),
+			"message": "Failed to retrieve libraries",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"libraries": libraries,
+	})
+}
