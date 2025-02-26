@@ -16,21 +16,19 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-
-	// Handle OPTIONS requests
-	router.OPTIONS("/*path", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Status(204)
-	})
+	// router.OPTIONS("/*path", func(c *gin.Context) {
+	// 	c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
+	// 	c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	// 	c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+	// 	c.Header("Access-Control-Allow-Credentials", "true")
+	// 	c.Status(204)
+	// })
 
 	publicRoutes := router.Group("/api")
 	{
@@ -58,12 +56,15 @@ func main() {
 			admin.GET("/list-requests", controllers.ListRequests)
 			admin.PUT("/:id/approve", controllers.ApproveRequest) //function to approve or reject issue request
 			admin.PUT("/:id/reject", controllers.RejectRequest)
+			admin.GET("/getBooks", controllers.GetAllBooks)
+			admin.GET("/:id/issue-info", controllers.IssueInfo)
 		}
 		reader := protectedRoutes.Group("/reader")
 		reader.Use(middleware.ReaderOnly)
 		{
+			reader.GET("/getBooks", controllers.GetAllBooks)
 			reader.GET("/search-books", controllers.SearchBooks)
-			reader.POST("/raise-request/:id", controllers.RaiseIssueRequest)
+			reader.GET("/raise-request/:id", controllers.RaiseIssueRequest)
 		}
 	}
 

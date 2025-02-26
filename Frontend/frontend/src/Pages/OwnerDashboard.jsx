@@ -1,11 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import Cookies from 'js-cookie'
-// import "./OwnerDashboard.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
+import "./OwnerDashboard.css";
 
 const OwnerDashboard = () => {
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const token = localStorage.getItem("token");
     // const cookie=Cookies.get("Authorization")
     // console.log(cookie)
@@ -64,6 +63,7 @@ const OwnerDashboard = () => {
 
             alert("Library created successfully!");
             closeLibraryModal();
+            navigate("/owner-dashboard")
         } catch (err) {
             setError(err.message);
         } finally {
@@ -96,6 +96,7 @@ const OwnerDashboard = () => {
 
             alert("Admin created successfully!");
             closeAdminModal();
+
         } catch (err) {
             setError(err.message);
         } finally {
@@ -152,7 +153,7 @@ const OwnerDashboard = () => {
             <h1 className="dashboard-title">Owner Dashboard</h1>
             <div className="button-container">
                 {!libraryId && (<button className="create-library" onClick={handleLibraryClick}>Create Library</button>)}
-                <button className="create-admin" onClick={handleAdminClick}>Create Admin</button>
+                {libraryId && (<button className="create-admin" onClick={handleAdminClick}>Create Admin</button>)}
                 {/* <button onClick={() => onLogout(navigate)}>Logout</button> */}
             </div>
 

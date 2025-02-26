@@ -1,4 +1,4 @@
-import React, { StrictMode, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "./LoginPage.css"
 import { Link, useNavigate } from "react-router-dom";

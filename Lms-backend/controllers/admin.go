@@ -17,6 +17,54 @@ type AddBooks struct {
 	Publisher string
 	Version   int
 }
+
+// func AddBook(c *gin.Context) {
+// 	var addBook AddBooks
+// 	var exisitingUser models.BookInventory
+
+// 	if err := c.ShouldBindJSON(&addBook); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"Error": err.Error(),
+// 		})
+// 		return
+// 	}
+// 	//var existingBook models.BookInventory
+
+// 	// if already existed then increase the count
+// 	// res := initializers.DB.Where("title=?", existingBook.Title).Find(&existingBook)
+
+// 	// if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+// 	//record not found
+// 	res := initializers.DB.Where("title=?", addBook.Title).First(&exisitingUser)
+
+// 	// fmt.Println(res)
+// 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+// 		// fmt.Println("record not found")
+// 		newBook := models.BookInventory{
+// 			ISBN:            addBook.ISBN,
+// 			LibID:           1,
+// 			Title:           addBook.Title,
+// 			Authors:         addBook.Author,
+// 			Publisher:       addBook.Publisher,
+// 			Version:         addBook.Version,
+// 			TotalCopies:     24,
+// 			AvailableCopies: 12,
+// 		}
+// 		initializers.DB.Create(&newBook)
+// 		c.JSON(http.StatusOK, gin.H{"data": newBook})
+// 	} else {
+// 		fmt.Println("record found")
+// 		// copies := exisitingUser.TotalCopies
+// 		initializers.DB.Model(&models.BookInventory{}).Where("title", addBook.Title).Update("TotalCopies", exisitingUser.TotalCopies+1)
+// 		// initializers.DB.Model(&models.BookInventory{})
+// 	}
+// 	// // fmt.Println("Record not found")
+
+// }
+
+// func RemoveBook(c *gin.Context) {
+
+// }
 func AddBook(c *gin.Context) {
 	//taking email to return to frontend to see which admin made is creating the book
 	email, _ := c.Get("email")
@@ -83,6 +131,18 @@ func AddBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Book added successfully", "book": newBook, "email": email})
 }
 func RemoveBook(c *gin.Context) {
+
+	// get the email of the admin logged in and check the book which needs to updated is from the same library
+	email, _ := c.Get("email")
+	var user models.User
+
+	if err := initializers.DB.Where("email=?", email).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+
 	isbn := c.Param("id")
 
 	var book models.BookInventory
@@ -90,6 +150,14 @@ func RemoveBook(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found."})
 		return
 	}
+	//check admin and bookid
+	if user.LibID != book.LibID {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Libraries are different",
+		})
+		return
+	}
+
 	if book.AvailableCopies <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No available copies to remove."})
 		return
@@ -116,6 +184,19 @@ type UpdatorBook struct {
 }
 
 func UpdateBook(c *gin.Context) {
+
+	// get the email of the admin logged in and check the book which needs to updated is from the same library
+	email, _ := c.Get("email")
+	var user models.User
+
+	if err := initializers.DB.Where("email=?", email).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+	userLibID := user.LibID
+
 	isbn := c.Param("id")
 	// fmt.Println(isbn)
 	var upBook UpdatorBook
@@ -128,6 +209,14 @@ func UpdateBook(c *gin.Context) {
 	var book models.BookInventory
 	if err := initializers.DB.Where("isbn = ?", isbn).First(&book).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found."})
+		return
+	}
+
+	//check admin and bookid
+	if userLibID != book.LibID {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Libraries are different",
+		})
 		return
 	}
 
@@ -336,5 +425,82 @@ func RejectRequest(c *gin.Context) {
 	// 	"Message":   "Issue registry created successfully",
 	// 	"Issue reg": issueReg,
 	// })
+
+}
+
+func GetAllBooks(c *gin.Context) {
+	// var book models.BookInventory
+	adminID, _ := c.Get("id")
+	fmt.Println(adminID)
+
+	var user models.User
+
+	if err := initializers.DB.Where("ID=?", adminID).Find(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"Error":   err.Error(),
+			"Message": "User not found",
+		})
+		return
+	}
+	// userLibId := user.LibID
+
+	var getBooks []models.BookInventory
+
+	if err := initializers.DB.Where("lib_id=? AND available_copies > ?", user.LibID, 0).Find(&getBooks).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"Error":   err.Error(),
+			"Message": "Unable to fetch all books",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Books": getBooks,
+	})
+}
+func IssueInfo(c *gin.Context) {
+	readerID := c.Param("id")  //reader ke libID
+	email, _ := c.Get("email") //admin ki libId
+
+	//check all where admin Lib Id will be equal to reader LibId
+	var adminDetails models.User
+
+	if err := initializers.DB.Where("email=?", email).First(&adminDetails).Error; err != nil {
+		c.JSON(http.StatusAccepted, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+
+	var readerDetails models.User
+	if err := initializers.DB.Where("id=?", readerID).First(&readerDetails).Error; err != nil {
+		c.JSON(http.StatusAccepted, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+
+	adminLibId := adminDetails.LibID
+	readerLibId := readerDetails.LibID
+
+	if adminLibId != readerLibId {
+		c.JSON(http.StatusNotFound, gin.H{
+			"Message": "Id not same so no registry to show for the reader by the admin",
+		})
+		return
+	}
+
+	var info []models.IssueRegistry
+
+	if err := initializers.DB.Where("reader_id=?", readerID).Find(&info).Error; err != nil {
+		c.JSON(http.StatusAccepted, gin.H{
+			"Message": "Coulnt find any issue registry",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusFound, gin.H{
+		"info": info,
+	})
 
 }
