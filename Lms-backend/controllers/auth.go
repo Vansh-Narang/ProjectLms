@@ -29,8 +29,7 @@ func CreateUser(c *gin.Context) {
 
 	if exisitingUser.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Error":   "already exists with the same email",
-			"message": "Same Email Already Exists",
+			"Error": "already exists with the same email",
 		})
 		return
 	}
@@ -63,7 +62,7 @@ func LoginUser(c *gin.Context) {
 
 	if userFound.ID == 0 {
 		c.JSON(http.StatusBadGateway, gin.H{
-			"Error": "No user found",
+			"Error": "No user exists",
 		})
 		return
 	}

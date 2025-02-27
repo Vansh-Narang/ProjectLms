@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
 import "./RegisterPage.css";
 
 const API_URL = "http://localhost:8000/api/users/register";
@@ -12,7 +13,7 @@ const RegisterPage = () => {
         email: "",
         contact_no: "",
         role: "",
-        library: "",
+        lib_id: "" || 0,
     });
 
     const [libraries, setLibraries] = useState([]);
@@ -38,6 +39,7 @@ const RegisterPage = () => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
+            [e.target.name]: e.target.name === 'lib_id' ? parseInt(e.target.value) : e.target.value
         });
     };
 
@@ -49,6 +51,7 @@ const RegisterPage = () => {
         try {
             const response = await axios.post(API_URL, formData);
             console.log("Registration Success:", response.data);
+            toast.success("Registration Successful")
             setSuccess(true);
             setTimeout(() => navigate("/login"), 2000); // Redirect after 2 sec
         } catch (err) {
@@ -114,13 +117,13 @@ const RegisterPage = () => {
                     </select>
                 </div>
 
-                {/* Show Library selection only if role is "reader" */}
+                {/* Showing Library only if role is "reader" */}
                 {formData.role === "reader" && (
                     <div className="input-group">
                         <label>Library</label>
                         <select
-                            name="library"
-                            value={formData.library}
+                            name="lib_id"
+                            value={formData.lib_id}
                             onChange={handleChange}
                             required
                         >
@@ -137,6 +140,10 @@ const RegisterPage = () => {
                 <button type="submit">Register</button>
                 <p>Already have an account? <Link to={"/login"}>Login</Link></p>
             </form>
+            <Toaster
+                position="top-center"
+                reverseOrder={true}
+            />
         </div>
     );
 };

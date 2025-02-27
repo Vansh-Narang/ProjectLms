@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./LoginPage.css"
+import toast, { Toaster } from 'react-hot-toast';
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
-    // const navigate=useNavigate()
+    const navigate = useNavigate()
     // if (!role){
     //     navigate("/")
     // }
@@ -12,11 +13,13 @@ const Login = () => {
     //   const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
+    const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setMessage("");
+        setSuccess(false);
 
         try {
             const response = await axios.post("http://localhost:8000/api/users/login",
@@ -26,19 +29,25 @@ const Login = () => {
             );
 
             setMessage("Logged in successfully!");
+            toast.success("Logged in successfully")
             console.log("Login response", response)
+            setSuccess(true);
             localStorage.setItem("token", response.data.token);
             localStorage.setItem("role", response.data.role);
 
             // Redirect based on role (optional)
             if (response.data.role === "admin") {
-                window.location.href = "/admin-dashboard";
+                setTimeout(() => navigate("/admin-dashboard"), 2000);
+                //  window.location.href = "/admin-dashboard";
             } else if (response.data.role === "owner") {
-                window.location.href = "/owner-dashboard";
+                setTimeout(() => navigate("/owner-dashboard"), 2000);
+                // window.location.href = "/owner-dashboard";
             } else {
-                window.location.href = "/dashboard";
+                setTimeout(() => navigate("/reader-dashboard"), 2000);
+                //  window.location.href = "/dashboard";
             }
         } catch (error) {
+            console.log(error.response)
             setError(error.response?.data?.Error || "Login failed. Try again.");
         }
     };
@@ -49,7 +58,7 @@ const Login = () => {
                 <h2>Login</h2>
 
                 {error && <p className="error">{error}</p>}
-                {message && <p className="success">{message}</p>}
+                {success && <p className="success-message">Login Successful! Redirecting...</p>}
 
                 <div className="input-group">
                     <label>Email</label>
@@ -64,6 +73,10 @@ const Login = () => {
                 <p>Don't have an account ? <Link to={"/"}>Register</Link></p>
                 <button type="submit">Login</button>
             </form>
+            <Toaster
+                position="top-center"
+                reverseOrder={true}
+            />
         </div>
     );
 };
