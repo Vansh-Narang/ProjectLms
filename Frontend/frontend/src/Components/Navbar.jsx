@@ -49,8 +49,8 @@ const Navbar = ({ onLogout }) => {
                             {userRole === "owner" && (
                                 <>
                                     <li><NavLink to="/owner-dashboard">Dashboard</NavLink></li>
-                                    <li><NavLink to="/manage-libraries">My Libraries</NavLink></li>
-                                    <li><NavLink to="/manage-admins">Manage Admins</NavLink></li>
+                                    {/* <li><NavLink to="/manage-libraries">My Libraries</NavLink></li>
+                                    <li><NavLink to="/manage-admins">Manage Admins</NavLink></li> */}
                                 </>
                             )}
 
