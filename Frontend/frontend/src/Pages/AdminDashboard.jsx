@@ -106,7 +106,7 @@ const AdminDashboard = () => {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Beader ${token}`
+                        "Authorization": `Bearer ${token}`
                     }
                 }
             );

@@ -1,3 +1,4 @@
+/* General Styles */
 .admin-container {
     display: flex;
     flex-direction: column;
@@ -13,6 +14,7 @@ h2 {
     color: #333;
 }
 
+/* Form Styles */
 form {
     display: flex;
     flex-direction: column;
@@ -28,9 +30,10 @@ input {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
+    width: 100%;
 }
 
-/* 
+/* Button Styles */
 button {
     padding: 10px;
     background: #007bff;
@@ -39,26 +42,33 @@ button {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-} */
+    transition: background 0.3s ease-in-out;
+}
 
 button:hover {
     background: #0056b3;
 }
 
+/* List Styles */
 .book-list,
 .request-list {
     list-style-type: none;
     padding: 0;
+    max-width: 800px;
+    margin: 10px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .book-list li,
 .request-list li {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 10px;
     background: #fff;
     border: 1px solid #ddd;
-    margin-top: 5px;
     border-radius: 5px;
 }
 
@@ -73,11 +83,12 @@ button:hover {
     background: #a71d2a;
 }
 
+/* List Item Styles */
 .ul-list {
     max-width: 800px;
     display: flex;
     flex-direction: column;
-    margin: 10px;
+    margin: 10px auto;
     gap: 10px;
 }
 
@@ -88,11 +99,12 @@ button:hover {
 }
 
 .li-list-div {
-    gap: 10px;
     display: flex;
     flex-direction: row;
+    gap: 10px;
 }
 
+/* Modal Styles */
 .modal {
     position: fixed;
     top: 0;
@@ -105,24 +117,23 @@ button:hover {
     justify-content: center;
 }
 
-.modal-content form {
-    background: white;
-}
-
 .modal-content {
     border: 5px solid black;
     background: white;
-    padding-right: 15px;
     padding: 20px;
     border-radius: 10px;
     width: 400px;
     text-align: center;
 }
 
+.modal-content form {
+    background: white;
+}
+
 .modal-content input {
     width: 100%;
     padding: 10px 4px;
-    margin: 10px 2px;
+    margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
@@ -131,6 +142,7 @@ button:hover {
     margin: 10px 5px;
 }
 
+/* Error Message */
 .error {
     color: red;
     margin-bottom: 10px;
