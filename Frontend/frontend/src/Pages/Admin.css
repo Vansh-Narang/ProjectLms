@@ -4,9 +4,9 @@
 :root {
     --primary: #3a6ea5;
     --primary-hover: #2a5a8f;
-    --secondary: #f8f9fa;
-    --danger: #dc3545;
-    --danger-hover: #bb2d3b;
+    --secondary: #3a6ea5;
+    --danger: #3a6ea5;
+    --danger-hover: #2a5a8f;
     --success: #28a745;
     --success-hover: #218838;
     --text-dark: #343a40;
@@ -42,6 +42,7 @@ h2 {
     gap: 0.5rem;
 }
 
+/* 
 h2::before {
     content: '';
     display: inline-block;
@@ -49,7 +50,7 @@ h2::before {
     height: 1.8rem;
     background-color: var(--primary);
     border-radius: 4px;
-}
+} */
 
 /* Action Button */
 .action-btn {
@@ -61,7 +62,7 @@ h2::before {
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    transition: 0.2s, 0.1s;
     margin-bottom: 1rem;
     display: inline-flex;
     align-items: center;

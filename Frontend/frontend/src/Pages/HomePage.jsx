@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
-import "./HomePage.css"; // Ensure to create a CSS file for styling
-
+// import { Link } from "react-router-dom";
+import "./HomePage.css";
 function HomePage() {
     return (
         <div className="home-container">
@@ -12,8 +11,8 @@ function HomePage() {
             </header>
 
             <section className="features-section">
-                <h2>Why Choose Our LMS?</h2>
                 <div className="features">
+                    <h2>Why Choose Our LMS?</h2>
                     <div className="feature-card">
                         <h3>Interactive Learning</h3>
                         <p>Engage with interactive courses and track your progress.</p>

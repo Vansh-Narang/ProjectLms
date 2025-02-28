@@ -7,9 +7,9 @@ import Navbar from "./Components/Navbar";
 import OwnerDashboard from "./Pages/OwnerDashboard";
 import AdminDashboard from "./Pages/AdminDashboard";
 import ReaderDashboard from './Pages/ReaderDashboard';
-import HomePage from "./Pages/HomePage";
+import HomePage from "./Pages/Homepage";
 
-// New page imports (you'll need to create these)
+
 // import ManageLibraries from "./Pages/Owner/ManageLibraries";
 // import ManageAdmins from "./Pages/Owner/ManageAdmins";
 // import ManageBooks from "./Pages/Admin/ManageBooks";
@@ -41,7 +41,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
-    // Redirect to appropriate dashboard based on role
     if (role === "owner") return <Navigate to="/owner-dashboard" replace />;
     if (role === "admin") return <Navigate to="/admin-dashboard" replace />;
     if (role === "reader") return <Navigate to="/reader-dashboard" replace />;

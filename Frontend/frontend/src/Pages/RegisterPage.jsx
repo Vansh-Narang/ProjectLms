@@ -13,7 +13,7 @@ const RegisterPage = () => {
         email: "",
         contact_no: "",
         role: "",
-        lib_id: "" || 0,
+        lib_id: "",
     });
 
     const [libraries, setLibraries] = useState([]);
@@ -38,10 +38,21 @@ const RegisterPage = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: name === 'lib_id' ? parseInt(value) : value
-        });
+        
+        // Handle role change separately
+        if (name === 'role') {
+            setFormData({
+                ...formData,
+                [name]: value,
+                // Set lib_id to 0 when role is owner
+                lib_id: value === 'owner' ? 0 : formData.lib_id
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: name === 'lib_id' ? parseInt(value) : value
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -127,7 +138,7 @@ const RegisterPage = () => {
                     </select>
                 </div>
 
-                {/* Showing Library only if role is "reader" */}
+                {/* Showing Library only if role is reader */}
                 {formData.role === "reader" && (
                     <div className="input-group">
                         <label htmlFor="lib_id">Select Library</label>

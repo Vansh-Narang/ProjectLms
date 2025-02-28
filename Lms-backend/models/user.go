@@ -15,7 +15,7 @@ type User struct {
 	ContactNumber string `json:"contact_no"`
 	// Role          string   `json:"role" binding"oneof=admin reader owner" gorm:"not null"`
 	Role    string   `json:"role" gorm:"not null"`
-	Library *Library `gorm:"foreignKey:LibID"`
+	Library *Library `gorm:"foreignKey:LibID" json:"-"`
 	LibID   uint     `json:"lib_id"`
 }
 
