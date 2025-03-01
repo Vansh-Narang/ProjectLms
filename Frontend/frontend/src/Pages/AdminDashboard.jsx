@@ -214,7 +214,6 @@ const AdminDashboard = () => {
     return (
         <div className="admin-container">
             <h1>Welcome Admin</h1>
-            <button className="" onClick={handleAddBookModal}>Add Book</button>
             {showBookModal && (
                 <div className="modal">
                     <div className="modal-content">
@@ -227,7 +226,7 @@ const AdminDashboard = () => {
                             <input type="text" name="publisher" placeholder="Publisher" onChange={handleChange} required />
                             <input type="number" name="version" placeholder="Version" onChange={handleChange} required />
                             <button type="submit">Add Book</button>
-                            <button type="submit" onClick={closeAddBookModal}>Close</button>
+                            <button type="button" onClick={closeAddBookModal}>Close</button>
                         </form>
                     </div>
                 </div>
@@ -242,7 +241,20 @@ const AdminDashboard = () => {
                 <input type="number" name="version" placeholder="Version" onChange={handleChange} required />
                 <button type="submit">Add Book</button>
             </form> */}
-            <h2>List Books</h2>
+            <h2>Manage Requests</h2>
+            <ul>
+                {requests.map((req, index) => (
+                    <li key={index}>
+                        {req.reader_id} requested {req.book_id}
+                        <button onClick={() => approveRequest(req.req_id)}>Approve</button>
+                        <button onClick={() => rejectRequest(req.req_id)}>Reject</button>
+                    </li>
+                ))}
+            </ul>
+            <div className="div-list-book">
+                <h2>List Books</h2>
+                <button className="" onClick={handleAddBookModal}>Add Book</button>
+            </div>
             {showUpdatedModal && (
                 <div className="modal">
                     <div className="modal-content">
@@ -299,16 +311,7 @@ const AdminDashboard = () => {
                 ))}
             </ul>
 
-            <h2>Manage Requests</h2>
-            <ul>
-                {requests.map((req, index) => (
-                    <li key={index}>
-                        {req.reader_id} requested {req.book_id}
-                        <button onClick={() => approveRequest(req.req_id)}>Approve</button>
-                        <button onClick={() => rejectRequest(req.req_id)}>Reject</button>
-                    </li>
-                ))}
-            </ul>
+
             <Toaster
                 position="top-center"
                 reverseOrder={true}

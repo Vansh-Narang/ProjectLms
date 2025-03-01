@@ -196,6 +196,21 @@ input[type="number"] {
     background-color: var(--danger-hover);
 }
 
+.div-list-book {
+    gap: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* justify-content: center; */
+}
+
+.div-list-book button {
+    width: 200px;
+    height: 40px;
+    /* display: flex;
+    flex-direction: column; */
+}
+
 /* Request List */
 .request-list {
     list-style: none;
@@ -240,7 +255,6 @@ input[type="number"] {
     background-color: var(--danger-hover);
 }
 
-/* Modal */
 .modal {
     position: fixed;
     top: 0;
@@ -316,7 +330,6 @@ input[type="number"] {
     grid-column: 2;
 }
 
-/* Error Message */
 .error {
     color: var(--danger);
     background-color: rgba(220, 53, 69, 0.1);
@@ -326,7 +339,6 @@ input[type="number"] {
     font-weight: 500;
 }
 
-/* Toast Notifications */
 .toast-container {
     position: fixed;
     top: 1rem;
@@ -334,7 +346,6 @@ input[type="number"] {
     z-index: 1100;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .admin-container {
         padding: 1rem;

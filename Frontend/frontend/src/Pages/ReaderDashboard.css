@@ -41,7 +41,7 @@
     max-width: 100px;
 }
 
-.ul-list-book{
+.ul-list-book {
     list-style: none;
     padding: 0;
     display: grid;
@@ -50,7 +50,7 @@
     margin: 1.5rem;
 }
 
-.li-list-div-book{
+.li-list-div-book {
     background-color: white;
     border-radius: 8px;
     overflow: hidden;
@@ -124,9 +124,11 @@
 .li-list-book button:nth-child(2):hover {
     background-color: var(--danger-hover);
 }
-.heading{
+
+.heading {
     margin-left: 1.5rem;
 }
-.li-list-book button{
+
+.li-list-book button {
     margin: 2px;
 }
