@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"lms/backend/initializers"
 	"lms/backend/models"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type AddBooks struct {
@@ -18,55 +20,9 @@ type AddBooks struct {
 	Version   int
 }
 
-// func AddBook(c *gin.Context) {
-// 	var addBook AddBooks
-// 	var exisitingUser models.BookInventory
-
-// 	if err := c.ShouldBindJSON(&addBook); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"Error": err.Error(),
-// 		})
-// 		return
-// 	}
-// 	//var existingBook models.BookInventory
-
-// 	// if already existed then increase the count
-// 	// res := initializers.DB.Where("title=?", existingBook.Title).Find(&existingBook)
-
-// 	// if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-// 	//record not found
-// 	res := initializers.DB.Where("title=?", addBook.Title).First(&exisitingUser)
-
-// 	// fmt.Println(res)
-// 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-// 		// fmt.Println("record not found")
-// 		newBook := models.BookInventory{
-// 			ISBN:            addBook.ISBN,
-// 			LibID:           1,
-// 			Title:           addBook.Title,
-// 			Authors:         addBook.Author,
-// 			Publisher:       addBook.Publisher,
-// 			Version:         addBook.Version,
-// 			TotalCopies:     24,
-// 			AvailableCopies: 12,
-// 		}
-// 		initializers.DB.Create(&newBook)
-// 		c.JSON(http.StatusOK, gin.H{"data": newBook})
-// 	} else {
-// 		fmt.Println("record found")
-// 		// copies := exisitingUser.TotalCopies
-// 		initializers.DB.Model(&models.BookInventory{}).Where("title", addBook.Title).Update("TotalCopies", exisitingUser.TotalCopies+1)
-// 		// initializers.DB.Model(&models.BookInventory{})
-// 	}
-// 	// // fmt.Println("Record not found")
-
-// }
-
-// func RemoveBook(c *gin.Context) {
-
-// }
+// AddBook function - fixed version with better error handling
 func AddBook(c *gin.Context) {
-	//taking email to return to frontend to see which admin made is creating the book
+	// Getting admin information
 	email, _ := c.Get("email")
 	adminID, exists := c.Get("id")
 	if !exists {
@@ -74,41 +30,54 @@ func AddBook(c *gin.Context) {
 		return
 	}
 
-	//Btw already being checked in the frontend but checking admin access again
+	// Verifying admin access
 	var adminUser models.User
 	if err := initializers.DB.Where("id = ? AND role = ?", adminID, "admin").First(&adminUser).Error; err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
 		return
 	}
 
-	//Checking the json format
+	// Parsing and validating book input
 	var bookInput models.BookInventory
 	if err := c.ShouldBindJSON(&bookInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	//Checking book exists with the same ISBN or not if exists increase the count by 1
+
+	// Input validation - important to check before database operations
+	if bookInput.ISBN == "" || bookInput.Title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ISBN and Title are required fields"})
+		return
+	}
+
+	// Check if book with this ISBN exists in any library
 	var existingBook models.BookInventory
-	if err := initializers.DB.Where("isbn = ? AND lib_id=?", bookInput.ISBN, adminUser.LibID).First(&existingBook).Error; err == nil {
-		// If book exists, increase the total copies count
-		existingBook.TotalCopies += 1
-		existingBook.AvailableCopies += 1
-		if err := initializers.DB.Save(&existingBook).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update book copies"})
+	result := initializers.DB.Where("isbn = ?", bookInput.ISBN).First(&existingBook)
+
+	if result.Error == nil {
+		// Book exists somewhere
+		if existingBook.LibID == adminUser.LibID {
+			// Book exists in this library, update copy count
+			existingBook.TotalCopies++
+			existingBook.AvailableCopies++
+			if err := initializers.DB.Save(&existingBook).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update book copies"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Book copies updated successfully", "book": existingBook, "email": email})
+			return
+		} else {
+			// Book exists in a different library
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Same ISBN already exists in another library, cannot add book"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": "Book copies updated successfully", "book": existingBook, "email": email})
+	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		// Database error that's not just "not found"
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error: " + result.Error.Error()})
 		return
 	}
 
-	//check for same isbn doesnt exist
-	fmt.Println(bookInput.ISBN)
-	if err := initializers.DB.Where("isbn=?", bookInput.ISBN).First(&existingBook).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Message": "Same ISBN already exists, cannot add book."})
-		return
-	}
-
-	//Book not found (else case)
+	// Book doesn't exist, create new one
 	newBook := models.BookInventory{
 		ISBN:            bookInput.ISBN,
 		Title:           bookInput.Title,
@@ -119,21 +88,24 @@ func AddBook(c *gin.Context) {
 		AvailableCopies: 1,
 		LibID:           adminUser.LibID,
 	}
-	fmt.Println(adminUser.LibID)
 
-	//Book created and now adding to the DB
+	// Create the book in DB
 	if err := initializers.DB.Create(&newBook).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book: " + err.Error()})
 		return
 	}
 
-	//Added the book
+	// Successfully added the book
 	c.JSON(http.StatusCreated, gin.H{"message": "Book added successfully", "book": newBook, "email": email})
 }
 func RemoveBook(c *gin.Context) {
 
 	// get the email of the admin logged in and check the book which needs to updated is from the same library
-	email, _ := c.Get("email")
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 	var user models.User
 
 	if err := initializers.DB.Where("email=?", email).First(&user).Error; err != nil {
@@ -142,8 +114,16 @@ func RemoveBook(c *gin.Context) {
 		})
 		return
 	}
+	if user.Role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+		return
+	}
 
 	isbn := c.Param("id")
+	if isbn == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ISBN"})
+		return
+	}
 
 	var book models.BookInventory
 	if err := initializers.DB.Where("isbn = ?", isbn).First(&book).Error; err != nil {
@@ -170,7 +150,10 @@ func RemoveBook(c *gin.Context) {
 
 	book.TotalCopies -= 1
 	book.AvailableCopies -= 1
-	initializers.DB.Save(&book)
+	if err := initializers.DB.Save(&book).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update book copies"})
+		return
+	}
 	c.JSON(http.StatusOK,
 		gin.H{"book": book, "Message": "Book deleted Successfully"})
 }
@@ -330,9 +313,6 @@ func ApproveRequest(c *gin.Context) {
 		return
 	}
 
-	// readerID := request.ReaderID
-	// fmt.Println(readerID)
-
 	// to do jo request id aai hai 10 usko update kr de requested to issued
 
 	var handlereq UpdateRequest
@@ -442,25 +422,6 @@ func RejectRequest(c *gin.Context) {
 		"message":      "updation successfully done",
 		"updated book": bookexists,
 	})
-
-	// //now setup the issue registry accordingly
-	// // var IssueReg models.IssueRegistry
-
-	// issueReg := models.IssueRegistry{
-	// 	ISBN:               bookId,
-	// 	ReaderID:           request.ReaderID,
-	// 	IssueApproverID:    adminUser.ID,
-	// 	IssueStatus:        "Rejected",
-	// 	ExpectedReturnDate: time.Now().AddDate(0, 0, 14), // 2 weeks later
-
-	// }
-	// initializers.DB.Create(&issueReg)
-
-	// c.JSON(http.StatusCreated, gin.H{
-	// 	"Message":   "Issue registry created successfully",
-	// 	"Issue reg": issueReg,
-	// })
-
 }
 
 func GetAllBooks(c *gin.Context) {

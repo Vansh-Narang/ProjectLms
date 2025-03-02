@@ -14,8 +14,11 @@ import (
 )
 
 func setupTestDB() {
-	initializers.ConnectDatabase() // Ensure you create a test DB connection
-	initializers.DB.AutoMigrate(&models.User{})
+	initializers.ConnectDatabase()
+	initializers.DB.AutoMigrate(&models.Library{}, &models.User{})
+	initializers.DB.AutoMigrate(&models.BookInventory{})
+	initializers.DB.AutoMigrate(&models.RequestEvent{})
+	initializers.DB.AutoMigrate(&models.IssueRegistry{})
 
 	// Clear table before tests
 	initializers.DB.Exec("DELETE FROM users")
