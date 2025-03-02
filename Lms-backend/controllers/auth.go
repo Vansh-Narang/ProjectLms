@@ -15,7 +15,7 @@ var secretKey = []byte("SECRET")
 func CreateUser(c *gin.Context) {
 	var user models.User
 
-	if err := c.ShouldBindBodyWithJSON(&user); err != nil {
+	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Error": err.Error(),
 		})
@@ -49,46 +49,35 @@ func CreateUser(c *gin.Context) {
 func LoginUser(c *gin.Context) {
 	var luser models.LoginUser
 
-	if err := c.ShouldBindJSON(&luser); err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{
-			"Error": err.Error(),
-		})
+	if err := c.ShouldBindJSON(&luser); err != nil || luser.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	var userFound models.User
 
-	//Finding user with email only but when found return the role also in the response
-	initializers.DB.Where("email=?", luser.Email).Find(&userFound)
+	var userFound models.User
+	initializers.DB.Where("email = ?", luser.Email).Find(&userFound)
 
 	if userFound.ID == 0 {
-		c.JSON(http.StatusBadGateway, gin.H{
-			"Error": "No user exists",
-		})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or user does not exist"})
 		return
 	}
-	claims := jwt.MapClaims{}
-	claims["id"] = userFound.ID
-	claims["role"] = userFound.Role
-	claims["email"] = userFound.Email
+
+	claims := jwt.MapClaims{
+		"id":    userFound.ID,
+		"role":  userFound.Role,
+		"email": userFound.Email,
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	newToken, _ := token.SignedString(secretKey)
+	newToken, err := token.SignedString(secretKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
 
-	// c.SetCookie("Authorise", newToken, 3600, "", "", false, true)
-
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Logged in successfully",
 		"token":   newToken,
 		"role":    userFound.Role,
 	})
 }
-
-// func GetUsers(context *gin.Context) {
-// 	var user []models.User
-// 	err := initializers.DB.Find(&user)
-// 	if err != nil {
-// 		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
-// 		return
-// 	}
-// 	context.JSON(http.StatusOK, user)
-// }
